@@ -1,0 +1,12 @@
+#!/bin/sh
+
+source /env
+
+/usr/bin/envtpl -o /etc/nginx/nginx.conf /etc/nginx/nginx.conf.tpl
+
+if ! test -f /etc/nginx/dhparam.pem; then
+  mkdir -p /etc/nginx/ && haveged && openssl dhparam -out /etc/nginx/dhparam.pem 2048
+  killall -9 haveged
+fi
+
+exec /usr/sbin/nginx -g "daemon off;" 
