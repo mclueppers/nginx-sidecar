@@ -92,10 +92,13 @@ http {
         }
 
         location {{ default "/" .APP_BASE_PATH }} {
-            proxy_pass            http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
-            proxy_connect_timeout 300;
-            proxy_send_timeout    300;
-            proxy_read_timeout    300;
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
         }
     }
     {{- end }}
@@ -134,10 +137,13 @@ http {
         }
         
         location {{ default "/" .APP_BASE_PATH }} {
-            proxy_pass            http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
-            proxy_connect_timeout 300;
-            proxy_send_timeout    300;
-            proxy_read_timeout    300;
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
         }
     }
     {{- end }}
