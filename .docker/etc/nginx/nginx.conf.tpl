@@ -117,7 +117,6 @@ http {
         location = {{ .METRICS_PATH }} {
             if ($ignore_metrics_ua) {
                 access_log          off;
-                error_log           off;
             }
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
             proxy_connect_timeout   300;
@@ -193,7 +192,6 @@ http {
         location = {{ .METRICS_PATH }} {
             if ($ignore_metrics_ua) {
                 access_log          off;
-                error_log           off;
             }
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
             proxy_connect_timeout   300;
