@@ -68,6 +68,21 @@ http {
     # Sets the path, format, and configuration for a buffered log write.
     access_log /var/log/nginx/access.log main;
 
+    {{ if eq "true" .LOG_SAMPLING -}}
+    split_clients $request_id $logme {
+        {{ default "1%" .LOG_SAMPLING_RATE }}     1;
+        *      0;
+    }
+
+    # map goes *outside* of the "server" block
+    map $http_user_agent $ignore_ua {
+        default                  0;
+        "~Pingdom.*"             1;
+        "~ELB-HealthChecker/.*"  1;
+        "~kube-probe/.*"         1;
+    }
+    {{- end }}
+
     {{ if eq "false" .SSL_OFFLOADING -}}
     server {
         listen {{ default "80" .LISTEN_PORT }} default_server;
@@ -90,6 +105,21 @@ http {
                 root /var/www/errorpages;
                 internal;
         }
+
+        {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
+        location = {{ .HEALTH_CHECK_PATH }} {
+            if ($ignore_ua) {
+                access_log /var/log/nginx/access.log main if=$logme;
+            }
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
+        }
+        {{- end }}
 
         location {{ default "/" .APP_BASE_PATH }} {
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
@@ -135,6 +165,21 @@ http {
                 root /var/www/errorpages;
                 internal;
         }
+        
+        {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
+        location = {{ .HEALTH_CHECK_PATH }} {
+            if ($ignore_ua) {
+                access_log /var/log/nginx/access.log main if=$logme;
+            }
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
+        }
+        {{- end }}
         
         location {{ default "/" .APP_BASE_PATH }} {
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};

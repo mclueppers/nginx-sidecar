@@ -13,11 +13,14 @@ The container accepts a hanful of environment variables that will configure Ngin
 | APP_PORT             | No       | 8080                   | Port the backend app listens on |
 | LISTEN_PORT          | No       | 80                     | Port Nginx listens to in case of no SSL offloading |
 | LISTEN_PORT_SSL      | No       | 443                    | Port Nginx listens to in case of SSL offloading |
+| LOG_SAMPLING         | No       | false                  | Enable log sampling for health-check endpoint.  |
+| LOG_SAMPLING_RATE    | No       | 1%                     | If log sampling enabled then log only 1% of the health-check requests |
+| HEALTH_CHECK_PATH    | No       | /healthz               | If log sampling enabled then apply the rules for this path only |
 | SSL_OFFLOADING       | No       | false                  | Control SSL offloading |
 | SSL_CRT              | No       | /etc/nginx/ssl/tls.crt | Path to the SSL/TLS certificate |
 | SSL_KEY              | No       | /etc/nginx/ssl/tls.key | Path to the SSL/TLS private key |
 
-This reverse proxy will listen on either `LISTEN_PORT` or `LISTEN_PORT_SSL` port depending on the value of `SSL_OFFLOADING`. You have to mount the SSL/TLS certificate pair in order to use SSL offloading. To increase entropy this container is using a pre-generated DH param file. It is strongly recommended to replace it/mount a new one when running in production. The file itself is located in `/etc/nginx/dhparam.pem`
+This reverse proxy will listen on either `LISTEN_PORT` or `LISTEN_PORT_SSL` port depending on the value of `SSL_OFFLOADING`. You have to mount the SSL/TLS certificate pair in order to use SSL offloading. To increase entropy this container is using a pre-generated DH param file. It is strongly recommended to replace it/mount a new one when running in production. The file itself is located in `/etc/nginx/dhparam.pem`. This container is logging all requests by default. In real-life deployment scenario your backend application will have a health-check endpoint that your load-balancer or orchestration platform will hit frequently. Logging them all is only increasing costs for your logging facility. `LOG_SAMPLING`, `LOG_SAMPLING_RATE` and `HEALTH_CHECK_PATH` help you define sampling rate for said logs in case you decide to get rid of them to some extent. 
 
 ## Building the container
 
