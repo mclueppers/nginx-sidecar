@@ -83,6 +83,13 @@ http {
     }
     {{- end }}
 
+    {{ if eq "true" .DISABLE_METRICS_LOG -}}
+    map $http_user_agent $ignore_metrics_ua {
+        default                  0;
+        "~Prometheus.*"          1;
+    }
+    {{- end }}
+
     {{ if eq "false" .SSL_OFFLOADING -}}
     server {
         listen {{ default "80" .LISTEN_PORT }} default_server;
@@ -105,6 +112,22 @@ http {
                 root /var/www/errorpages;
                 internal;
         }
+
+        {{ if eq "true" .DISABLE_METRICS_LOG -}}
+        location = {{ .METRICS_PATH }} {
+            if ($ignore_metrics_ua) {
+                access_log          off;
+                error_log           off;
+            }
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
+        }
+        {{- end }}
 
         {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
         location = {{ .HEALTH_CHECK_PATH }} {
@@ -166,6 +189,22 @@ http {
                 internal;
         }
         
+        {{ if eq "true" .DISABLE_METRICS_LOG -}}
+        location = {{ .METRICS_PATH }} {
+            if ($ignore_metrics_ua) {
+                access_log          off;
+                error_log           off;
+            }
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_connect_timeout   300;
+            proxy_send_timeout      300;
+            proxy_read_timeout      300;
+            proxy_buffers           6 8192k;
+            proxy_buffer_size       8192k;
+            proxy_busy_buffers_size 8192k;
+        }
+        {{- end }}
+
         {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
         location = {{ .HEALTH_CHECK_PATH }} {
             if ($ignore_ua) {

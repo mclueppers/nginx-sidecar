@@ -5,9 +5,11 @@ FROM alpine:3.11
 ENV \
   APP_IP="127.0.0.1" \
   APP_BASE_PATH="/" \
+  DISABLE_METRICS_LOG="false" \
+  HEALTH_CHECK_PATH="/healthz" \
   LOG_SAMPLING="false" \
   LOG_SAMPLING_RATE="1%" \
-  HEALTH_CHECK_PATH="/healthz" \
+  METRICS_PATH="/metrics" \
   SSL_OFFLOADING="false" \
   SSL_CRT="/etc/nginx/ssl/tls.crt" \
   SSL_KEY="/etc/nginx/ssl/tls.key"
