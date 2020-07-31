@@ -113,12 +113,13 @@ http {
                 internal;
         }
 
-        {{ if eq "true" .DISABLE_METRICS_LOG -}}
         location = {{ .METRICS_PATH }} {
+            {{- if eq "true" .DISABLE_METRICS_LOG -}}
             if ($ignore_metrics_ua) {
                 access_log          off;
             }
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            {{- end }}
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -126,14 +127,14 @@ http {
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
         }
-        {{- end }}
 
-        {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
         location = {{ .HEALTH_CHECK_PATH }} {
+            {{- if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
             if ($ignore_ua) {
                 access_log /var/log/nginx/access.log main if=$logme;
             }
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            {{- end }}
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -141,10 +142,9 @@ http {
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
         }
-        {{- end }}
 
         location {{ default "/" .APP_BASE_PATH }} {
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -187,13 +187,14 @@ http {
                 root /var/www/errorpages;
                 internal;
         }
-        
-        {{ if eq "true" .DISABLE_METRICS_LOG -}}
+
         location = {{ .METRICS_PATH }} {
+            {{ if eq "true" .DISABLE_METRICS_LOG -}}
             if ($ignore_metrics_ua) {
                 access_log          off;
             }
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            {{- end }}
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -201,14 +202,14 @@ http {
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
         }
-        {{- end }}
 
-        {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
         location = {{ .HEALTH_CHECK_PATH }} {
+            {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
             if ($ignore_ua) {
                 access_log /var/log/nginx/access.log main if=$logme;
             }
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            {{- end }}
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -216,10 +217,9 @@ http {
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
         }
-        {{- end }}
-        
+
         location {{ default "/" .APP_BASE_PATH }} {
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }};
+            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;

@@ -13,11 +13,13 @@ The container accepts a hanful of environment variables that will configure Ngin
 | APP_PORT             | No       | 8080                   | Port the backend app listens on |
 | DISABLE_METRICS_LOG  | No       | false                  | Disable logging for the metrics endpoint |
 | HEALTH_CHECK_PATH    | No       | /healthz               | If log sampling enabled then apply the rules for this path only. See below. |
+| HEALTH_CHECK_PORT    | No       | APP_PORT               | If not provided, defaults to APP_PORT above. |
 | LISTEN_PORT          | No       | 80                     | Port Nginx listens to in case of no SSL offloading |
 | LISTEN_PORT_SSL      | No       | 443                    | Port Nginx listens to in case of SSL offloading |
 | LOG_SAMPLING         | No       | false                  | Enable log sampling for health-check endpoint.  |
 | LOG_SAMPLING_RATE    | No       | 1%                     | If log sampling enabled then log only 1% of the health-check requests |
 | METRICS_PATH         | No       | /metrics               | The path to the backend application's metrics endpoint |
+| METRICS_PORT         | No       | APP_PORT               | If not provided, defaults to APP_PORT above. |
 | SSL_OFFLOADING       | No       | false                  | Control SSL offloading |
 | SSL_CRT              | No       | /etc/nginx/ssl/tls.crt | Path to the SSL/TLS certificate |
 | SSL_KEY              | No       | /etc/nginx/ssl/tls.key | Path to the SSL/TLS private key |
