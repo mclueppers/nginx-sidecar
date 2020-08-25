@@ -12,7 +12,9 @@ ENV \
   METRICS_PATH="/metrics" \
   SSL_OFFLOADING="false" \
   SSL_CRT="/etc/nginx/ssl/tls.crt" \
-  SSL_KEY="/etc/nginx/ssl/tls.key"
+  SSL_KEY="/etc/nginx/ssl/tls.key" \
+  WEBSOCKET_SUPPORT="false" \
+  WEBSOCKET_PATH="/"
 
 RUN apk --update --no-cache add nginx nginx-mod-http-headers-more runit haveged openssl \
     && mkdir -p /run/nginx/ /etc/nginx/ssl \

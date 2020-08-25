@@ -90,6 +90,13 @@ http {
     }
     {{- end }}
 
+    {{ if eq "true" (default "false" .WEBSOCKET_SUPPORT) -}}
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
+    {{- end }}
+
     {{ if eq "false" .SSL_OFFLOADING -}}
     server {
         listen {{ default "80" .LISTEN_PORT }} default_server;
@@ -112,6 +119,21 @@ http {
                 root /var/www/errorpages;
                 internal;
         }
+
+        {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
+        location = {{ .WEBSOCKET_PATH }} {
+            proxy_pass http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
+            proxy_connect_timeout       300;
+            proxy_send_timeout          300;
+            proxy_read_timeout          300;
+            proxy_buffers               6 8192k;
+            proxy_buffer_size           8192k;
+            proxy_busy_buffers_size     8192k;
+            proxy_http_version          1.1;
+            proxy_set_header Upgrade    $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+        }
+        {{ end -}}
 
         location = {{ .METRICS_PATH }} {
             {{- if eq "true" .DISABLE_METRICS_LOG -}}
@@ -151,6 +173,10 @@ http {
             proxy_buffers           6 8192k;
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
+            {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH) }}
+            proxy_set_header Upgrade    $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            {{ end -}}
         }
     }
     {{- end }}
@@ -218,6 +244,21 @@ http {
             proxy_busy_buffers_size 8192k;
         }
 
+        {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
+        location = {{ .WEBSOCKET_PATH }} {
+            proxy_pass http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
+            proxy_connect_timeout       300;
+            proxy_send_timeout          300;
+            proxy_read_timeout          300;
+            proxy_buffers               6 8192k;
+            proxy_buffer_size           8192k;
+            proxy_busy_buffers_size     8192k;
+            proxy_http_version          1.1;
+            proxy_set_header Upgrade    $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+        }
+        {{ end -}}
+
         location {{ default "/" .APP_BASE_PATH }} {
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }}$request_uri;
             proxy_connect_timeout   300;
@@ -226,6 +267,10 @@ http {
             proxy_buffers           6 8192k;
             proxy_buffer_size       8192k;
             proxy_busy_buffers_size 8192k;
+            {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH) }}
+            proxy_set_header Upgrade    $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            {{ end }}
         }
     }
     {{- end }}
