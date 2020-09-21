@@ -1,6 +1,6 @@
 FROM subfuzion/envtpl as envtpl
 
-FROM alpine:3.11
+FROM alpine:3.12
 
 ENV \
   APP_IP="127.0.0.1" \
@@ -14,7 +14,8 @@ ENV \
   SSL_CRT="/etc/nginx/ssl/tls.crt" \
   SSL_KEY="/etc/nginx/ssl/tls.key" \
   WEBSOCKET_SUPPORT="false" \
-  WEBSOCKET_PATH="/"
+  WEBSOCKET_PATH="/" \
+  WORKER_CONNECTIONS="1024"
 
 RUN apk --update --no-cache add nginx nginx-mod-http-headers-more runit haveged openssl \
     && mkdir -p /run/nginx/ /etc/nginx/ssl \

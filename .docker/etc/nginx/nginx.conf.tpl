@@ -19,7 +19,7 @@ include /etc/nginx/modules/*.conf;
 events {
 	# The maximum number of simultaneous connections that can be opened by
 	# a worker process.
-	worker_connections 1024;
+	worker_connections {{ default "1024" .WORKER_CONNECTIONS }};
 }
 
 http {
