@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+  traced-nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "nginx", "service": "traced-nginx"}]'
+    environment:
+      - ENABLE_OPENTRACING=true
+      - DATADOG_HOST=datadog
+    ports:
+      - "8080:80"
+

@@ -15,7 +15,6 @@ error_log /var/log/nginx/error.log warn;
 # Includes files with directives to load dynamic modules.
 include /etc/nginx/modules/*.conf;
 
-
 events {
 	# The maximum number of simultaneous connections that can be opened by
 	# a worker process.
@@ -65,9 +64,6 @@ http {
             '$status $body_bytes_sent "$http_referer" '
             '"$http_user_agent" "$http_x_forwarded_for"';
 
-    # Sets the path, format, and configuration for a buffered log write.
-    access_log /var/log/nginx/access.log main;
-
     {{ if eq "true" .LOG_SAMPLING -}}
     split_clients $request_id $logme {
         {{ default "1%" .LOG_SAMPLING_RATE }}     1;
@@ -95,6 +91,31 @@ http {
         default upgrade;
         ''      close;
     }
+    {{- end }}
+
+    {{ if eq "true" (default "false" .ENABLE_OPENTRACING) -}}
+    opentracing_load_tracer /usr/lib64/libdd_opentracing_plugin.so /etc/nginx/datadog.json;
+
+    opentracing on;
+    opentracing_tag http_user_agent $http_user_agent;
+    opentracing_trace_locations off;
+    opentracing_operation_name "$request_method $uri";
+
+    # Propagate the active span context upstream, so that the trace can be
+    # continued by the backend.
+    # See http://opentracing.io/documentation/pages/api/cross-process-tracing.html
+    opentracing_propagate_context;
+
+    log_format with_trace_id '$remote_addr - $http_x_forwarded_user [$time_local] "$request" '
+        '$status $body_bytes_sent "$http_referer" '
+        '"$http_user_agent" "$http_x_forwarded_for" '
+        '"$opentracing_context_x_datadog_trace_id" "$opentracing_context_x_datadog_parent_id"';
+
+    # Sets the path, format, and configuration for a buffered log write.
+    access_log /var/log/nginx/access.log with_trace_id;
+    {{- else }}
+    # Sets the path, format, and configuration for a buffered log write.
+    access_log /var/log/nginx/access.log main;
     {{- end }}
 
     {{ if eq "false" .SSL_OFFLOADING -}}
