@@ -59,11 +59,6 @@ http {
     # instead of using partial frames.
     #tcp_nopush on;
 
-    # Specifies the main log format.
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-            '$status $body_bytes_sent "$http_referer" '
-            '"$http_user_agent" "$http_x_forwarded_for"';
-
     {{ if eq "true" .LOG_SAMPLING -}}
     split_clients $request_id $logme {
         {{ default "1%" .LOG_SAMPLING_RATE }}     1;
@@ -106,16 +101,21 @@ http {
     # See http://opentracing.io/documentation/pages/api/cross-process-tracing.html
     opentracing_propagate_context;
 
-    log_format with_trace_id '$remote_addr - $http_x_forwarded_user [$time_local] "$request" '
+    log_format nginx_log '$remote_addr - $http_x_forwarded_user [$time_local] "$request" '
         '$status $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for" '
-        '"$opentracing_context_x_datadog_trace_id" "$opentracing_context_x_datadog_parent_id"';
+        '"trace_id:$opentracing_context_x_datadog_trace_id" "parent_span_id:$opentracing_context_x_datadog_parent_id"';
 
     # Sets the path, format, and configuration for a buffered log write.
-    access_log /var/log/nginx/access.log with_trace_id;
+    access_log /var/log/nginx/access.log nginx_log;
     {{- else }}
+    # Specifies the main log format.
+    log_format nginx_log '$remote_addr - $remote_user [$time_local] "$request" '
+            '$status $body_bytes_sent "$http_referer" '
+            '"$http_user_agent" "$http_x_forwarded_for"';
+
     # Sets the path, format, and configuration for a buffered log write.
-    access_log /var/log/nginx/access.log main;
+    access_log /var/log/nginx/access.log nginx_log;
     {{- end }}
 
     {{ if eq "false" .SSL_OFFLOADING -}}
@@ -174,7 +174,7 @@ http {
         location = {{ .HEALTH_CHECK_PATH }} {
             {{- if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
             if ($ignore_ua) {
-                access_log /var/log/nginx/access.log main if=$logme;
+                access_log /var/log/nginx/access.log nginx_log if=$logme;
             }
             {{- end }}
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
@@ -253,7 +253,7 @@ http {
         location = {{ .HEALTH_CHECK_PATH }} {
             {{ if and (eq "true" .LOG_SAMPLING) (not (eq .APP_BASE_PATH .HEALTH_CHECK_PATH)) -}}
             if ($ignore_ua) {
-                access_log /var/log/nginx/access.log main if=$logme;
+                access_log /var/log/nginx/access.log nginx_log if=$logme;
             }
             {{- end }}
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;

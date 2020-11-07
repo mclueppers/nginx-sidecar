@@ -1,5 +1,5 @@
 ARG ALPINE_VERSION=3.12
-FROM subfuzion/envtpl as envtpl
+FROM mclueppers/envtpl as envtpl
 
 FROM alpine:${ALPINE_VERSION}
 ARG ALPINE_VERSION=3.12
