@@ -104,7 +104,7 @@ http {
     log_format nginx_log '$remote_addr - $http_x_forwarded_user [$time_local] "$request" '
         '$status $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for" '
-        '"trace_id:$opentracing_context_x_datadog_trace_id" "parent_span_id:$opentracing_context_x_datadog_parent_id"';
+        'trace_id:$opentracing_context_x_datadog_trace_id parent_span_id:$opentracing_context_x_datadog_parent_id';
 
     # Sets the path, format, and configuration for a buffered log write.
     access_log /var/log/nginx/access.log nginx_log;
