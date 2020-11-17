@@ -24,6 +24,10 @@ The container accepts a hanful of environment variables that will configure Ngin
 | METRICS_PORT               | No       | APP_PORT               | If not provided, defaults to APP_PORT above. |
 | OPENTRACING_OPERATION_NAME | No       | nginx.handle           | Set the default operation name in datadog.json settings for OpenTracing |
 | OPENTRACING_SERVICE_NAME   | No       | nginx                  | The name of the service that emmits traces |
+| REALIP_ENABLED             | No       | false                  | Used to enable http_realip_module |
+| REALIP_FROM                | No       | 127.0.0.0/8            | Comma-separated list of CIDRs to consider trusted |
+| REALIP_HEADER              | No       | X-Forwarded-For        | HTTP header to use to obtain the real IP of the client from |
+| REALIP_RECURSIVE           | No       | true                   | If recursive replacement of trusted IPs from above header is used |
 | SSL_OFFLOADING             | No       | false                  | Control SSL offloading |
 | SSL_CRT                    | No       | /etc/nginx/ssl/tls.crt | Path to the SSL/TLS certificate |
 | SSL_KEY                    | No       | /etc/nginx/ssl/tls.key | Path to the SSL/TLS private key |

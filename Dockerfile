@@ -14,6 +14,10 @@ ENV \
   LOG_SAMPLING="false" \
   LOG_SAMPLING_RATE="1%" \
   METRICS_PATH="/metrics" \
+  REALIP_ENABLED="false" \
+  REALIP_FROM="127.0.0.0/8" \
+  REALIP_HEADER="X-Forwarded-For" \
+  REALIP_RECURSIVE="true" \
   SSL_OFFLOADING="false" \
   SSL_CRT="/etc/nginx/ssl/tls.crt" \
   SSL_KEY="/etc/nginx/ssl/tls.key" \

@@ -88,6 +88,18 @@ http {
     }
     {{- end }}
 
+    {{ if eq "true" (default "false" .REALIP_ENABLED) -}}
+    {{ range $cidr := splitList "," .REALIP_FROM }}
+    set_real_ip_from  {{ $cidr }};
+    {{ end }}
+    real_ip_header {{ .REALIP_HEADER }};
+    {{ if eq "true" (default "false" .REALIP_RECURSIVE) }}
+    real_ip_recursive on;
+    {{ else }}
+    real_ip_recursive off;
+    {{ end }}
+    {{ end }}
+
     {{ if eq "true" (default "false" .ENABLE_OPENTRACING) -}}
     opentracing_load_tracer /usr/lib64/libdd_opentracing_plugin.so /etc/nginx/datadog.json;
 
@@ -104,7 +116,7 @@ http {
     log_format nginx_log '$remote_addr - $http_x_forwarded_user [$time_local] "$request" '
         '$status $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for" '
-        'trace_id:$opentracing_context_x_datadog_trace_id parent_span_id:$opentracing_context_x_datadog_parent_id';
+        'dd.trace_id=$opentracing_context_x_datadog_trace_id dd.span_id=$opentracing_context_x_datadog_parent_id';
 
     # Sets the path, format, and configuration for a buffered log write.
     access_log /var/log/nginx/access.log nginx_log;
@@ -141,7 +153,7 @@ http {
                 internal;
         }
 
-        {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
+        {{ if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
         location = {{ .WEBSOCKET_PATH }} {
             proxy_pass http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
             proxy_connect_timeout       300;
@@ -154,7 +166,7 @@ http {
             proxy_set_header Upgrade    $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
         }
-        {{ end -}}
+        {{ end }}
 
         location = {{ .METRICS_PATH }} {
             {{- if eq "true" .DISABLE_METRICS_LOG -}}
@@ -197,12 +209,12 @@ http {
             {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH) }}
             proxy_set_header Upgrade    $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
-            {{ end -}}
+            {{ end }}
         }
     }
-    {{- end }}
+    {{ end }}
 
-    {{ if eq "true" .SSL_OFFLOADING -}}
+    {{ if eq "true" .SSL_OFFLOADING }}
     # Enable SSL session cache
     ssl_session_cache   shared:SSL:5m;
     ssl_session_timeout 1h;
@@ -265,7 +277,7 @@ http {
             proxy_busy_buffers_size 8192k;
         }
 
-        {{- if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
+        {{ if and (eq "true" (default "false" .WEBSOCKET_SUPPORT)) (not (eq (default "/" .APP_BASE_PATH) .WEBSOCKET_PATH)) }}
         location = {{ .WEBSOCKET_PATH }} {
             proxy_pass http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .METRICS_PORT) }}$request_uri;
             proxy_connect_timeout       300;
@@ -278,7 +290,7 @@ http {
             proxy_set_header Upgrade    $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
         }
-        {{ end -}}
+        {{ end }}
 
         location {{ default "/" .APP_BASE_PATH }} {
             proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" .APP_PORT }}$request_uri;
