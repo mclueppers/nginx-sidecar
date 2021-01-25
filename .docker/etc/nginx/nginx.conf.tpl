@@ -189,7 +189,7 @@ http {
                 access_log /var/log/nginx/access.log nginx_log if=$logme;
             }
             {{- end }}
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
+            proxy_pass              http://{{ default "127.0.0.1" (default .APP_IP .HEALTH_CHECK_HOST) }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
@@ -268,7 +268,7 @@ http {
                 access_log /var/log/nginx/access.log nginx_log if=$logme;
             }
             {{- end }}
-            proxy_pass              http://{{ default "127.0.0.1" .APP_IP }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
+            proxy_pass              http://{{ default "127.0.0.1" (default .APP_IP .HEALTH_CHECK_HOST) }}:{{ default "8080" (default .APP_PORT .HEALTH_CHECK_PORT) }}$request_uri;
             proxy_connect_timeout   300;
             proxy_send_timeout      300;
             proxy_read_timeout      300;
